@@ -1,16 +1,14 @@
-<p align="center">
-<h1>Pinterest Downloader</h1>
+<h1 align="center">Pinterest Downloader</h1>
 
-<p>
+<p align="center">
   <img src="assets/pinterestdownloader.png" alt="Pinterest Downloader">
 </p>
 
-<h2>Installation: </h2>
+<h2 align="center">Installation: </h2>
 
-<h3>On Windows: </h3>
-<p>Execute the pinterestdownloader_setup.exe</p>
+<h3 align="center">On Windows: </h3>
+<p align="center">Execute the pinterestdownloader_setup.exe</p>
 
-<h3>On Linux: </h3>
-<p>pip install -r requeriments.txt</p>
-<p>python PinterestDownloader.py</p>
-</p>
+<h3 align="center">On Linux: </h3>
+<p align="center">pip install -r requeriments.txt</p>
+<p align="center">python PinterestDownloader.py</p>
