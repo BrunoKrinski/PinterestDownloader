@@ -13,4 +13,4 @@
 <h3>On Linux: </h3>
 <p>pip install -r requeriments.txt</p>
 <p>python PinterestDownloader.py</p>
-<p>
+</p>
