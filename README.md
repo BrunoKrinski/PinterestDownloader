@@ -8,7 +8,3 @@
 
 <h3 align="center">On Windows: </h3>
 <p align="center">Execute the pinterestdownloader_setup.exe</p>
-
-<h3 align="center">On Linux: </h3>
-<p align="center">pip install -r requeriments.txt</p>
-<p align="center">python PinterestDownloader.py</p>
