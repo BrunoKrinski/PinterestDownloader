@@ -5,7 +5,7 @@ from views.home import HomeView
 def main(page: ft.Page):
     page.title = "Pinterest Downloader!"
     page.window_maximized = True
-    
+    # comment
     app_routes = [
         ftr.path(url = "/",
                  clear = True,
