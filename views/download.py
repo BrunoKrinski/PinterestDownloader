@@ -1,4 +1,6 @@
+import os
 import time
+import wget
 import flet as ft
 from threading import Thread
 from selenium import webdriver
@@ -11,120 +13,98 @@ from selenium.webdriver.support import expected_conditions as EC
 global status
 global urls
 
-def search_images(email, password, link, page):
-    print('executando seach ')
-        
-    options = webdriver.ChromeOptions()
-    options.add_argument("--start-maximized")
-    
-    driver = webdriver.Chrome(options=options)
-
-    driver.get("https://br.pinterest.com/")
-
-    enter_path = '//*[@id="fullpage-wrapper"]/div[1]/div/div/div[1]/div/div[2]/div[2]/button/div/div'
-    enter_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, enter_path))).click()
-
-    username_field = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="email"]')))
-    password_field = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="password"]')))
-
-    username_field.clear()
-    username_field.send_keys(email)   
-    password_field.clear()
-    password_field.send_keys(password)
-    
-    enter_path = '//*[@id="__PWS_ROOT__"]/div[1]/div[2]/div/div/div/div/div/div[4]/form/div[7]/button/div'
-    enter_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, enter_path))).click()
-
-    time.sleep(10)
-    global urls
-    urls = []
-    
-    driver.get(link)
-
-    time.sleep(10)
-    
-    global status
-    status.value = "Searching for Images..."
-    status.update()
-    
-    scroll_times = 0
-    last_height = driver.execute_script("return document.body.scrollHeight")
-    i = 0
-    while i < 10:
-        i += 1
-        anchors = driver.find_elements(By.TAG_NAME, "img")
-        anchors = [anchor for anchor in anchors]
-
-        for anchor in anchors:
-            try:
-                link = anchor.get_attribute("srcset")
-                link = link.split(',')[-1].split(' ')[1]
-                urls.append(link)
-            except:
-                continue 
-        scroll_times += 1
-
-        if scroll_times == 100:
-            new_height = driver.execute_script("return document.body.scrollHeight")
-            if new_height == last_height:
-                break
-            else:
-                last_height = new_height
-                scroll_times = 0
-        
-        driver.execute_script("window.scrollBy(0, 25);")
-    driver.quit()
-    #urls = list(set(urls))
-    print('search')
-    urls = list(set(urls))
-    print(len(urls))
-    #return urls
-    page.go("/")
-
 def download_images():
-    print('executando download')    
-    global search_thread
-    search_thread.join()
     
-    global status
-    status.value = "Downloading Images"
-    status.update()
+    images_folder = f"C:\\Users\\{os.getlogin()}\\Pictures\\PinterestDownloader"
+    os.makedirs(images_folder, exist_ok=True)
     
     global pb
-    pb.height = 0
-    pb.update()
+    global status
+    global images
+    global return_button
+    global return_container
     
-    global urls
-    print('download')   
-    print(len(urls)) 
-    #for url in urls:
-    #    print(url)
+    with open("tmp/urls.txt", 'r') as urls_file:
+        urls = urls_file.readlines()
+        for i, url in enumerate(urls):           
+            url = url.replace('\n','')
+            #print(f'\nUrl: {url}')
+            win = True
+            try:
+                wget.download(url, out = images_folder)
+            except:
+                win = False
+                print("\nCouldn't download!")
+                continue
+            if win:
+                image_name = url.split('/')[-1]
+                
+                if len(images.controls) > 5:
+                    images.controls.pop(0)
+                
+                images.controls.append(
+                    ft.Image(
+                        src = images_folder + '/' + image_name,
+                        width = 200,
+                        height = 400,
+                        fit = ft.ImageFit.COVER,
+                        repeat = ft.ImageRepeat.NO_REPEAT,
+                        border_radius = ft.border_radius.all(10)))
+                images.update()
+            pb.value = i / len(urls)
+            pb.update()
+        pb.value = 1
+        pb.update()
+        
+        status.value = "Download Finished!"
+        status.update()
+        
+        return_container.height = 0
+        return_container.update()
+        return_button.height = 50
+        return_button.update()
+    return
+
 
 def DownloadView(page, params):
-    
-    email, password, link = params['params'].split('&')
-    link = link.replace("|","/")
     
     page.fonts = {
         "RubikIso": "fonts/RubikIso-Regular.ttf"
     }
         
-    space = lambda height = 0 : ft.Container(height = height)
+    space = lambda height = 0 : ft.Container(height = height,
+                                             padding = 0,
+                                             margin = 0)
     
-    global search_thread
-    search_thread = Thread(target = search_images,
-                           args = (email, password, link, page))
-    search_thread.start()
-    '''
     download_thread = Thread(target = download_images)
     download_thread.start()
-    '''
-        
-    space = lambda height = 0 : ft.Container(height = height)
+    
+    def end_download(e):
+        page.go("/")
+                        
+    title = ft.Text(
+        "Pinterest Downloader!", 
+        size = 100,
+        color = ft.colors.BLUE,
+        weight = ft.FontWeight.BOLD,
+        font_family = "RubikIso")
+    
+    global return_button
+    return_button = ft.ElevatedButton(
+        content = ft.Text("Return!",
+            color = ft.colors.BLUE,
+            weight = ft.FontWeight.BOLD, 
+            size = 25,
+            font_family = "RubikIso"),
+        height = 0,
+        on_click = end_download)
+    
+    global return_container
+    return_container = ft.Container(height = 50)
     
     global status
     status = ft.Text(
-        "Initializing...",
+        "Downloading Images...",
         size = 50,
         color = ft.colors.BLUE,
         font_family = "RubikIso")
@@ -134,22 +114,28 @@ def DownloadView(page, params):
         width = page.width / 1.2,
         height = 20,
         color = ft.colors.WHITE)
-            
-    title = ft.Text(
-        "Pinterest Downloader!", 
-        size = 100,
-        color = ft.colors.BLUE,
-        weight = ft.FontWeight.BOLD,
-        font_family = "RubikIso")
-        
+    
+    global images
+    images = ft.Row(
+        expand = 1, 
+        wrap = False, 
+        scroll = "always",
+        #auto_scroll = True.
+        alignment = ft.MainAxisAlignment.CENTER)
+    
     return ft.View(
-        "/download",
+        "/search",
         horizontal_alignment = ft.CrossAxisAlignment.CENTER,
         controls = [
             title,
-            space(75),    
+            #space(5),    
             status,
-            space(5),    
+            #space(5),    
             pb,
+            #space(5),
+            images,
+            #space(5),
+            return_button,
+            return_container,
         ]
     )

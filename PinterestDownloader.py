@@ -15,9 +15,9 @@ def main(page: ft.Page):
         ftr.path(url = "/search/:params",
                  clear = True,
                  view = SearchView),
-        #ftr.path(url = "/download",
-        #         clear = True,
-        #         view = DownloadView),        
+        ftr.path(url = "/download",
+                 clear = True,
+                 view = DownloadView),        
     ]
         
     ftr.Routing(page = page, app_routes = app_routes)

@@ -44,9 +44,9 @@ def search_images(email, password, link, page):
     scroll_times = 0
     last_height = driver.execute_script("return document.body.scrollHeight")
     
-    i = 0
-    while i < 10:
-        i += 1
+    #i = 0
+    while True:
+        #i += 1
         anchors = driver.find_elements(By.TAG_NAME, "img")
         anchors = [anchor for anchor in anchors]
 
@@ -74,10 +74,10 @@ def search_images(email, password, link, page):
     print(len(urls))
     
     os.makedirs("tmp/", exist_ok=True)
-    with open("tmp/urls.txt") as urls_file:
+    with open("tmp/urls.txt", 'w') as urls_file:
         for url in urls:
             urls_file.write(url + '\n')
-    page.go("/")
+    page.go("/download")
 
 def SearchView(page, params):
     
@@ -88,14 +88,14 @@ def SearchView(page, params):
         "RubikIso": "fonts/RubikIso-Regular.ttf"
     }
         
-    space = lambda height = 0 : ft.Container(height = height)
+    space = lambda height = 0 : ft.Container(height = height,
+                                             padding = 0,
+                                             margin = 0)
     
     search_thread = Thread(target = search_images,
                            args = (email, password, link, page))
     search_thread.start()
-        
-    space = lambda height = 0 : ft.Container(height = height)
-    
+            
     status = ft.Text(
         "Searching for Images...",
         size = 50,

@@ -7,7 +7,9 @@ def HomeView(page, params):
         "RubikIso": "fonts/RubikIso-Regular.ttf"
     }
     
-    space = lambda height = 0 : ft.Container(height = height)
+    space = lambda height = 0 : ft.Container(height = height,
+                                             padding = 0,
+                                             margin = 0)
     
     def close_banner(e):
         page.banner.open = False
@@ -39,9 +41,10 @@ def HomeView(page, params):
     def start_download(e):
         
         url = link_text.value.replace("/","|")
-        message = f"{email_text.value}&{password_text.value}&{url}"
-        page.go(f"/search/{message}")
-        '''
+        #message = f"{email_text.value}&{password_text.value}&{url}"
+        #page.go(f"/search/{message}")
+        
+        
         if email_text.value == "" or password_text.value == "" or link_text.value == "":
             message = "Please Fill All Fields!"
             show_banner_click(e, message)
@@ -51,7 +54,7 @@ def HomeView(page, params):
             if validators.url(link_text.value):
                 url = link_text.value.replace("/","|")
                 message = f"{email_text.value}&{password_text.value}&{url}"
-                page.go(f"/download/{message}")
+                page.go(f"/search/{message}")
                 return
             else:
                 message = "Invalid Link Format!"
@@ -61,7 +64,6 @@ def HomeView(page, params):
             message = "Invalid E-mail Format!"
             show_banner_click(e, message)
             return
-        '''
                     
     title = ft.Text(
         "Pinterest Downloader!", 
@@ -132,7 +134,7 @@ def HomeView(page, params):
         horizontal_alignment = ft.CrossAxisAlignment.CENTER,
         controls = [
             title,
-            space(25),
+            space(5),
             email_text,
             space(5),
             password_text,
