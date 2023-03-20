@@ -1,7 +1,6 @@
 import flet as ft
 import flet_route as ftr
 from views.home import HomeView
-from views.search import SearchView
 from views.download import DownloadView
 
 def main(page: ft.Page):
@@ -12,10 +11,7 @@ def main(page: ft.Page):
         ftr.path(url = "/",
                  clear = True,
                  view = HomeView),
-        ftr.path(url = "/search/:params",
-                 clear = True,
-                 view = SearchView),
-        ftr.path(url = "/download",
+        ftr.path(url = "/download/:params",
                  clear = True,
                  view = DownloadView),        
     ]

@@ -10,63 +10,141 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-global status
-global urls
+def search_images(email, password, link, page):
+            
+    options = webdriver.ChromeOptions()
+    options.add_argument("--start-maximized")
+    
+    driver = webdriver.Chrome(options=options)
 
+    driver.get("https://br.pinterest.com/")
+    
+
+    enter_path = '//*[@id="fullpage-wrapper"]/div[1]/div/div/div[1]/div/div[2]/div[2]/button/div/div'
+    enter_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, enter_path))).click()
+
+    username_field = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="email"]')))
+    password_field = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="password"]')))
+
+    username_field.clear()
+    username_field.send_keys(email)   
+    password_field.clear()
+    password_field.send_keys(password)
+    
+    enter_path = '//*[@id="__PWS_ROOT__"]/div[1]/div[2]/div/div/div/div/div/div[4]/form/div[7]/button/div'
+    enter_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, enter_path))).click()
+
+    time.sleep(5)
+    
+    global urls
+    urls = []
+    
+    driver.get(link)
+
+    time.sleep(5)
+    
+    global status
+    status.value = "Searching for Images..."
+    status.update()
+        
+    scroll_times = 0
+    last_height = driver.execute_script("return document.body.scrollHeight")
+    
+    while True:
+        anchors = driver.find_elements(By.TAG_NAME, "img")
+
+        for anchor in anchors:
+            try:
+                link = anchor.get_attribute("srcset")
+                link = link.split(',')[-1].split(' ')[1]
+                urls.append(link)
+            except:
+                continue 
+        scroll_times += 1
+
+        if scroll_times == 50:
+            new_height = driver.execute_script("return document.body.scrollHeight")
+            if new_height == last_height:
+                break
+            else:
+                last_height = new_height
+                scroll_times = 0
+        
+        driver.execute_script("window.scrollBy(0, 50);")
+    driver.quit()
+    
+    urls = list(set(urls))
+    
 def download_images():
+    
+    global search_thread
+    search_thread.join()
+    
+    global status
+    global status2
+    status.value = "Downloading Images..."
+    status.update()
     
     images_folder = f"C:\\Users\\{os.getlogin()}\\Pictures\\PinterestDownloader"
     os.makedirs(images_folder, exist_ok=True)
     
     global pb
-    global status
+    global urls
     global images
     global return_button
     global return_container
     
-    with open("tmp/urls.txt", 'r') as urls_file:
-        urls = urls_file.readlines()
-        for i, url in enumerate(urls):           
-            url = url.replace('\n','')
-            #print(f'\nUrl: {url}')
-            win = True
-            try:
-                wget.download(url, out = images_folder)
-            except:
-                win = False
-                print("\nCouldn't download!")
-                continue
-            if win:
-                image_name = url.split('/')[-1]
-                
-                if len(images.controls) > 5:
-                    images.controls.pop(0)
-                
-                images.controls.append(
-                    ft.Image(
-                        src = images_folder + '/' + image_name,
-                        width = 200,
-                        height = 400,
-                        fit = ft.ImageFit.COVER,
-                        repeat = ft.ImageRepeat.NO_REPEAT,
-                        border_radius = ft.border_radius.all(10)))
-                images.update()
-            pb.value = i / len(urls)
-            pb.update()
-        pb.value = 1
+    for i, url in enumerate(urls):           
+        url = url.replace('\n','')
+        
+        win = True
+        try:
+            wget.download(url, out = images_folder)
+        except:
+            win = False
+            print("\nCouldn't download!")
+            continue
+        
+        if win:
+            image_name = url.split('/')[-1]
+            
+            if len(images.controls) > 5:
+                images.controls.pop(0)
+            
+            images.controls.append(
+                ft.Image(
+                    src = images_folder + '/' + image_name,
+                    width = 200,
+                    height = 400,
+                    fit = ft.ImageFit.COVER,
+                    repeat = ft.ImageRepeat.NO_REPEAT,
+                    border_radius = ft.border_radius.all(10)))
+            images.update()
+        pb.value = i / len(urls)
         pb.update()
-        
-        status.value = "Download Finished!"
-        status.update()
-        
-        return_container.height = 0
-        return_container.update()
-        return_button.height = 50
-        return_button.update()
+    pb.value = 1
+    pb.update()
+
+    pb.height = 0
+    pb.update()
+    
+    status.value = "Download Finished!"
+    status.update()
+    
+    status2.value = f"Images saved in {images_folder}"
+    status2.size = 20
+    status2.update()
+    
+    return_container.height = 0
+    return_container.update()
+    return_button.height = 50
+    return_button.update()
     return
 
-
 def DownloadView(page, params):
+    
+    email, password, link = params['params'].split('&')
+    link = link.replace("|","/")
     
     page.fonts = {
         "RubikIso": "fonts/RubikIso-Regular.ttf"
@@ -75,6 +153,11 @@ def DownloadView(page, params):
     space = lambda height = 0 : ft.Container(height = height,
                                              padding = 0,
                                              margin = 0)
+    
+    global search_thread
+    search_thread = Thread(target = search_images,
+                           args = (email, password, link, page))
+    search_thread.start()
     
     download_thread = Thread(target = download_images)
     download_thread.start()
@@ -104,10 +187,15 @@ def DownloadView(page, params):
     
     global status
     status = ft.Text(
-        "Downloading Images...",
+        "Initializing...",
         size = 50,
         color = ft.colors.BLUE,
         font_family = "RubikIso")
+    
+    global status2
+    status2 = ft.Text(
+        size = 0,
+        color = ft.colors.WHITE)
     
     global pb
     pb = ft.ProgressBar(
@@ -119,8 +207,6 @@ def DownloadView(page, params):
     images = ft.Row(
         expand = 1, 
         wrap = False, 
-        scroll = "always",
-        #auto_scroll = True.
         alignment = ft.MainAxisAlignment.CENTER)
     
     return ft.View(
@@ -128,13 +214,10 @@ def DownloadView(page, params):
         horizontal_alignment = ft.CrossAxisAlignment.CENTER,
         controls = [
             title,
-            #space(5),    
             status,
-            #space(5),    
+            status2,
             pb,
-            #space(5),
             images,
-            #space(5),
             return_button,
             return_container,
         ]

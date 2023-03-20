@@ -38,12 +38,7 @@ def HomeView(page, params):
         page.banner.open = True
         page.update()
     
-    def start_download(e):
-        
-        url = link_text.value.replace("/","|")
-        #message = f"{email_text.value}&{password_text.value}&{url}"
-        #page.go(f"/search/{message}")
-        
+    def start_download(e):       
         
         if email_text.value == "" or password_text.value == "" or link_text.value == "":
             message = "Please Fill All Fields!"
@@ -54,7 +49,7 @@ def HomeView(page, params):
             if validators.url(link_text.value):
                 url = link_text.value.replace("/","|")
                 message = f"{email_text.value}&{password_text.value}&{url}"
-                page.go(f"/search/{message}")
+                page.go(f"/download/{message}")
                 return
             else:
                 message = "Invalid Link Format!"
@@ -140,7 +135,7 @@ def HomeView(page, params):
             password_text,
             space(5),
             link_text,
-            space(5),
+            space(50),
             start_button,
             developed,
             github_button,
