@@ -223,16 +223,35 @@ def DownloadView(page, params):
         wrap = False, 
         alignment = ft.MainAxisAlignment.CENTER)
     
+    col1 = ft.Column(
+        horizontal_alignment = ft.CrossAxisAlignment.CENTER,
+        controls = [
+            status, status2, pb,
+        ]
+    )
+    
+    col2 = ft.Column(
+        horizontal_alignment = ft.CrossAxisAlignment.CENTER,
+        controls = [
+            return_button, return_container
+        ]
+    )
+    
     return ft.View(
         "/search",
         horizontal_alignment = ft.CrossAxisAlignment.CENTER,
+        vertical_alignment = ft.MainAxisAlignment.SPACE_BETWEEN,
         controls = [
             title,
-            status,
-            status2,
-            pb,
+            #status,
+            #status2,
+            #pb,
+            col1,
+            space(15),
             images,
-            return_button,
-            return_container,
+            space(15),
+            #return_button,
+            #return_container,
+            col2,
         ]
     )

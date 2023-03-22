@@ -99,7 +99,9 @@ def HomeView(page, params):
         cursor_color = ft.colors.WHITE,
         border_color = ft.colors.WHITE,
         focused_color = ft.colors.WHITE,
-        text_size = 20)
+        text_size = 20,
+        expand = True,
+        focused_border_width = 5)
     
     password_text = ft.TextField(
         label = "Pinterest Password!",
@@ -110,7 +112,16 @@ def HomeView(page, params):
         focused_color = ft.colors.WHITE,
         text_size = 20,
         password = True,
-        can_reveal_password=True)
+        can_reveal_password=True,
+        expand = True,
+        focused_border_width = 5)
+        
+    row1 = ft.Row(
+        controls = [
+            email_text,
+            password_text
+        ]
+    )
     
     link_text = ft.TextField(
         label = "Pinterest Link!",
@@ -119,21 +130,39 @@ def HomeView(page, params):
         cursor_color = ft.colors.WHITE,
         border_color = ft.colors.WHITE,
         focused_color = ft.colors.WHITE,
-        text_size = 20)
+        text_size = 20,
+        expand = True,
+        focused_border_width = 5)
     
     browser_selector = ft.Dropdown(
         width = 500,
+        
         label = "Select Your Browser!",
         label_style = label_style,
         options=[
             ft.dropdown.Option("Chrome"),
             ft.dropdown.Option("Firefox"),
         ],
+        content_padding = 23,
         text_size = 20,
         border_color = ft.colors.WHITE,
         focused_color = ft.colors.WHITE,
+        focused_border_width = 5,
         #focused_border_width = 100,
     )      
+    
+    row2 = ft.Row(
+        controls = [
+            link_text,
+            browser_selector
+        ]
+    )
+    
+    input_data = ft.Column(
+        controls = [
+            row1, row2
+        ]
+    )
     
     github_button = ft.TextButton(
         content = ft.Text("GitHub!", 
@@ -142,23 +171,22 @@ def HomeView(page, params):
             color = ft.colors.WHITE),
         on_click = lambda _ : 
             page.launch_url('https://github.com/BrunoKrinski'))
+    
+    infos = ft.Column(
+        horizontal_alignment = ft.CrossAxisAlignment.CENTER,
+        controls = [
+            developed, github_button
+        ]
+    )
         
     return ft.View(
         "/",
         horizontal_alignment = ft.CrossAxisAlignment.CENTER,
+        vertical_alignment = ft.MainAxisAlignment.SPACE_BETWEEN,
         controls = [
             title,
-            #space(5),
-            email_text,
-            #space(5),
-            password_text,
-            #space(5),
-            link_text,
-            #space(5),
-            browser_selector,
-            space(5),
+            input_data,
             start_button,
-            developed,
-            github_button,
+            infos
         ]
     )
