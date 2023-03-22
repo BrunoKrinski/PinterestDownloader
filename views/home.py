@@ -44,11 +44,16 @@ def HomeView(page, params):
             message = "Please Fill All Fields!"
             show_banner_click(e, message)
             return
+    
+        if browser_selector.value is None:
+            message = "Please Select Your Browser!"
+            show_banner_click(e, message)
+            return
         
         if validators.email(email_text.value):        
             if validators.url(link_text.value):
                 url = link_text.value.replace("/","|")
-                message = f"{email_text.value}&{password_text.value}&{url}"
+                message = f"{email_text.value}&{password_text.value}&{url}&{browser_selector.value}"
                 page.go(f"/download/{message}")
                 return
             else:
@@ -116,26 +121,42 @@ def HomeView(page, params):
         focused_color = ft.colors.WHITE,
         text_size = 20)
     
+    browser_selector = ft.Dropdown(
+        width = 500,
+        label = "Select Your Browser!",
+        label_style = label_style,
+        options=[
+            ft.dropdown.Option("Chrome"),
+            ft.dropdown.Option("Firefox"),
+        ],
+        text_size = 20,
+        border_color = ft.colors.WHITE,
+        focused_color = ft.colors.WHITE,
+        #focused_border_width = 100,
+    )      
+    
     github_button = ft.TextButton(
         content = ft.Text("GitHub!", 
             size = 20,
             font_family = "RubikIso",
             color = ft.colors.WHITE),
         on_click = lambda _ : 
-            page.launch_url('https://github.com/BrunoKrinski'))      
-    
+            page.launch_url('https://github.com/BrunoKrinski'))
+        
     return ft.View(
         "/",
         horizontal_alignment = ft.CrossAxisAlignment.CENTER,
         controls = [
             title,
-            space(5),
+            #space(5),
             email_text,
-            space(5),
+            #space(5),
             password_text,
-            space(5),
+            #space(5),
             link_text,
-            space(50),
+            #space(5),
+            browser_selector,
+            space(5),
             start_button,
             developed,
             github_button,

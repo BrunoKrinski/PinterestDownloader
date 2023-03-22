@@ -1,7 +1,8 @@
 import os
 import time
-import wget
+import getpass
 import flet as ft
+from sys import platform
 from threading import Thread
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -10,12 +11,18 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-def search_images(email, password, link, page):
-            
-    options = webdriver.ChromeOptions()
-    options.add_argument("--start-maximized")
+import requests
+
+def search_images(email, password, link, browser):
     
-    driver = webdriver.Chrome(options=options)
+    if browser == "Chrome":            
+        options = webdriver.ChromeOptions()
+        options.add_argument("--start-maximized")
+        driver = webdriver.Chrome(options=options)
+    elif browser == "Firefox":
+        options = webdriver.FirefoxOptions()
+        options.add_argument("--start-maximized")
+        driver = webdriver.Firefox(options=options)
 
     driver.get("https://br.pinterest.com/")
     
@@ -50,7 +57,9 @@ def search_images(email, password, link, page):
     scroll_times = 0
     last_height = driver.execute_script("return document.body.scrollHeight")
     
-    while True:
+    i = 0
+    while i < 100:
+        i += 1
         anchors = driver.find_elements(By.TAG_NAME, "img")
 
         for anchor in anchors:
@@ -85,8 +94,14 @@ def download_images():
     status.value = "Downloading Images..."
     status.update()
     
-    images_folder = f"C:\\Users\\{os.getlogin()}\\Pictures\\PinterestDownloader"
-    os.makedirs(images_folder, exist_ok=True)
+    usr = getpass.getuser()
+    if platform == "linux" or platform == "linux2":
+        print('Linux')
+        images_folder = f"/home/{usr}/Pictures/PinterestDownloader/"
+    elif platform == "win32":
+        print('Windows')
+        images_folder = f"C:\\Users\\{usr}\\Pictures\\PinterestDownloader\\"
+    os.makedirs(images_folder, exist_ok = True)
     
     global pb
     global urls
@@ -95,25 +110,24 @@ def download_images():
     global return_container
     
     for i, url in enumerate(urls):           
-        url = url.replace('\n','')
         
-        win = True
-        try:
-            wget.download(url, out = images_folder)
-        except:
-            win = False
-            print("\nCouldn't download!")
-            continue
-        
-        if win:
+        url = url.replace('\n','')      
+        img_request = requests.get(url) 
+            
+        if img_request.status_code == 200:
+            
             image_name = url.split('/')[-1]
+            
+            pth = f"{images_folder}{image_name}"
+            with open(pth, 'wb') as f:
+                f.write(img_request.content)
             
             if len(images.controls) > 5:
                 images.controls.pop(0)
             
             images.controls.append(
                 ft.Image(
-                    src = images_folder + '/' + image_name,
+                    src = pth,
                     width = 200,
                     height = 400,
                     fit = ft.ImageFit.COVER,
@@ -143,7 +157,7 @@ def download_images():
 
 def DownloadView(page, params):
     
-    email, password, link = params['params'].split('&')
+    email, password, link, browser = params['params'].split('&')
     link = link.replace("|","/")
     
     page.fonts = {
@@ -156,7 +170,7 @@ def DownloadView(page, params):
     
     global search_thread
     search_thread = Thread(target = search_images,
-                           args = (email, password, link, page))
+                           args = (email, password, link, browser))
     search_thread.start()
     
     download_thread = Thread(target = download_images)

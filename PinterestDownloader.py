@@ -6,6 +6,7 @@ from views.download import DownloadView
 def main(page: ft.Page):
     page.title = "Pinterest Downloader!"
     page.window_maximized = True
+    page.theme_mode = "DARK"
     
     app_routes = [
         ftr.path(url = "/",
