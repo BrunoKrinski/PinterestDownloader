@@ -38,7 +38,7 @@ def HomeView(page, params):
         page.banner.open = True
         page.update()
     
-    def start_download(e):       
+    def start_download(e):
         
         if email_text.value == "" or password_text.value == "" or link_text.value == "":
             message = "Please Fill All Fields!"
@@ -147,8 +147,7 @@ def HomeView(page, params):
         text_size = 20,
         border_color = ft.colors.WHITE,
         focused_color = ft.colors.WHITE,
-        focused_border_width = 5,
-        #focused_border_width = 100,
+        focused_border_width = 5
     )      
     
     row2 = ft.Row(

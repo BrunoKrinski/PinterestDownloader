@@ -7,13 +7,16 @@ from threading import Thread
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 import requests
 
 def search_images(email, password, link, browser):
+    
+    global err_message
+    err_message = None
     
     if browser == "Chrome":            
         options = webdriver.ChromeOptions()
@@ -24,11 +27,15 @@ def search_images(email, password, link, browser):
         options.add_argument("--start-maximized")
         driver = webdriver.Firefox(options=options)
 
-    driver.get("https://br.pinterest.com/")
+    driver.get("https://www.youtube.com/")
     
-
     enter_path = '//*[@id="fullpage-wrapper"]/div[1]/div/div/div[1]/div/div[2]/div[2]/button/div/div'
-    enter_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, enter_path))).click()
+    try:
+        WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, enter_path))).click()
+    except TimeoutException:
+        err_message = "Error on login!"
+        driver.quit()
+        return
 
     username_field = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="email"]')))
     password_field = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="password"]')))
@@ -39,7 +46,12 @@ def search_images(email, password, link, browser):
     password_field.send_keys(password)
     
     enter_path = '//*[@id="__PWS_ROOT__"]/div[1]/div[2]/div/div/div/div/div/div[4]/form/div[7]/button/div'
-    enter_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, enter_path))).click()
+    try:
+        WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, enter_path))).click()
+    except TimeoutException:
+        err_message = "Error on login!"
+        driver.quit()
+        return
 
     time.sleep(5)
     
@@ -48,18 +60,23 @@ def search_images(email, password, link, browser):
     
     driver.get(link)
 
-    time.sleep(5)
+    time.sleep(1)
+        
+    try:
+        driver.find_element(By.CSS_SELECTOR,"div.FNs.zI7.iyn.Hsu")
+    except NoSuchElementException:
+        err_message = "Error on login or Pinterest link unavailable!"
+        driver.quit()
+        return
     
     global status
     status.value = "Searching for Images..."
     status.update()
-        
+    
     scroll_times = 0
     last_height = driver.execute_script("return document.body.scrollHeight")
     
-    i = 0
-    while i < 100:
-        i += 1
+    while True:
         anchors = driver.find_elements(By.TAG_NAME, "img")
 
         for anchor in anchors:
@@ -88,9 +105,28 @@ def download_images():
     
     global search_thread
     search_thread.join()
-    
+        
+    global pb
+    global urls
+    global images
     global status
     global status2
+    global err_message
+    global return_button
+    global return_container
+    
+    if err_message is not None:
+        pb.height = 0
+        pb.update()
+        status.color = ft.colors.RED
+        status.value = err_message
+        status.update()
+        return_container.height = 0
+        return_container.update()
+        return_button.height = 50
+        return_button.update()
+        return
+        
     status.value = "Downloading Images..."
     status.update()
     
@@ -102,13 +138,7 @@ def download_images():
         print('Windows')
         images_folder = f"C:\\Users\\{usr}\\Pictures\\PinterestDownloader\\"
     os.makedirs(images_folder, exist_ok = True)
-    
-    global pb
-    global urls
-    global images
-    global return_button
-    global return_container
-    
+        
     for i, url in enumerate(urls):           
         
         url = url.replace('\n','')      
@@ -243,15 +273,10 @@ def DownloadView(page, params):
         vertical_alignment = ft.MainAxisAlignment.SPACE_BETWEEN,
         controls = [
             title,
-            #status,
-            #status2,
-            #pb,
             col1,
             space(15),
             images,
             space(15),
-            #return_button,
-            #return_container,
             col2,
         ]
     )
