@@ -1,6 +1,7 @@
 import os
 import time
 import getpass
+import requests
 import flet as ft
 from sys import platform
 from threading import Thread
@@ -11,8 +12,6 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-import requests
-
 def search_images(email, password, link, browser):
     
     global err_message
@@ -21,13 +20,13 @@ def search_images(email, password, link, browser):
     if browser == "Chrome":            
         options = webdriver.ChromeOptions()
         options.add_argument("--start-maximized")
-        driver = webdriver.Chrome(options=options)
+        driver = webdriver.Chrome(service_log_path=os.devnull, options=options)
     elif browser == "Firefox":
         options = webdriver.FirefoxOptions()
         options.add_argument("--start-maximized")
-        driver = webdriver.Firefox(options=options)
+        driver = webdriver.Firefox(service_log_path=os.devnull, options=options)
 
-    driver.get("https://www.youtube.com/")
+    driver.get("https://pinterest.com/")
     
     enter_path = '//*[@id="fullpage-wrapper"]/div[1]/div/div/div[1]/div/div[2]/div[2]/button/div/div'
     try:
@@ -60,7 +59,7 @@ def search_images(email, password, link, browser):
     
     driver.get(link)
 
-    time.sleep(1)
+    time.sleep(5)
         
     try:
         driver.find_element(By.CSS_SELECTOR,"div.FNs.zI7.iyn.Hsu")
@@ -88,7 +87,7 @@ def search_images(email, password, link, browser):
                 continue 
         scroll_times += 1
 
-        if scroll_times == 50:
+        if scroll_times == 100:
             new_height = driver.execute_script("return document.body.scrollHeight")
             if new_height == last_height:
                 break
@@ -132,10 +131,8 @@ def download_images():
     
     usr = getpass.getuser()
     if platform == "linux" or platform == "linux2":
-        print('Linux')
         images_folder = f"/home/{usr}/Pictures/PinterestDownloader/"
     elif platform == "win32":
-        print('Windows')
         images_folder = f"C:\\Users\\{usr}\\Pictures\\PinterestDownloader\\"
     os.makedirs(images_folder, exist_ok = True)
         
@@ -175,7 +172,7 @@ def download_images():
     status.value = "Download Finished!"
     status.update()
     
-    status2.value = f"Images saved in {images_folder}"
+    status2.value = f"Images saved in: {images_folder}"
     status2.size = 20
     status2.update()
     
@@ -233,7 +230,7 @@ def DownloadView(page, params):
     status = ft.Text(
         "Initializing...",
         size = 50,
-        color = ft.colors.BLUE,
+        color = ft.colors.GREEN,
         font_family = "RubikIso")
     
     global status2
