@@ -4,9 +4,12 @@ from views.home import HomeView
 from views.download import DownloadView
 
 def main(page: ft.Page):
+    page.theme_mode = "DARK"
     page.title = "Pinterest Downloader!"
     page.window_maximized = True
-    page.theme_mode = "DARK"
+    page.window_movable = False
+    page.window_resizable = False
+    page.update()
     
     app_routes = [
         ftr.path(url = "/",

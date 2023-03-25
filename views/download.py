@@ -155,7 +155,7 @@ def download_images():
             images.controls.append(
                 ft.Image(
                     src = pth,
-                    width = 200,
+                    width = 198,
                     height = 400,
                     fit = ft.ImageFit.COVER,
                     repeat = ft.ImageRepeat.NO_REPEAT,
@@ -246,8 +246,7 @@ def DownloadView(page, params):
     
     global images
     images = ft.Row(
-        expand = 1, 
-        wrap = False, 
+        expand = True, 
         alignment = ft.MainAxisAlignment.CENTER)
     
     col1 = ft.Column(
@@ -263,7 +262,7 @@ def DownloadView(page, params):
             return_button, return_container
         ]
     )
-    
+        
     return ft.View(
         "/search",
         horizontal_alignment = ft.CrossAxisAlignment.CENTER,
