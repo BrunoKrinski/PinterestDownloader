@@ -52,21 +52,25 @@ def search_images(email, password, link, browser):
         driver.quit()
         return
 
-    time.sleep(5)
+    time.sleep(10)
     
     global urls
     urls = []
     
-    driver.get(link)
-
-    time.sleep(5)
+    for i in range(10):
+        if i == 9:
+            err_message = "Error on login or Pinterest link unavailable!"
+            driver.quit()
+            return
         
-    try:
-        driver.find_element(By.CSS_SELECTOR,"div.FNs.zI7.iyn.Hsu")
-    except NoSuchElementException:
-        err_message = "Error on login or Pinterest link unavailable!"
-        driver.quit()
-        return
+        driver.get(link)
+        time.sleep(10)
+        try:
+            driver.find_element(By.CSS_SELECTOR,"div.FNs.zI7.iyn.Hsu")
+            break
+        except NoSuchElementException:
+            continue
+        
     
     global status
     status.value = "Searching for Images..."
